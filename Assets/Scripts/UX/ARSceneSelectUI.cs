@@ -10,27 +10,43 @@ namespace UnityEngine.XR.ARFoundation.Samples
     public class ARSceneSelectUI : MonoBehaviour
     {
         [SerializeField]
+        Scrollbar m_HorizontalScrollBar;
+        public Scrollbar horizontalScrollBar
+        {
+            get => m_HorizontalScrollBar;
+            set => m_HorizontalScrollBar = value;
+        }
+
+        [SerializeField]
+        Scrollbar m_VerticalScrollBar;
+        public Scrollbar verticalScrollBar
+        {
+            get => m_VerticalScrollBar;
+            set => m_VerticalScrollBar = value;
+        }
+
+        [SerializeField]
         GameObject m_AllMenu;
         public GameObject allMenu
         {
-            get { return m_AllMenu; }
-            set { m_AllMenu = value; }
+            get => m_AllMenu;
+            set => m_AllMenu = value;
         }
 
         [SerializeField]
         GameObject m_ImageTrackingMenu;
         public GameObject imageTrackingMenu
         {
-            get { return m_ImageTrackingMenu; }
-            set { m_ImageTrackingMenu = value; }
+            get => m_ImageTrackingMenu;
+            set => m_ImageTrackingMenu = value;
         }
 
         [SerializeField]
         GameObject m_FaceTrackingMenu;
         public GameObject faceTrackingMenu
         {
-            get { return m_FaceTrackingMenu; }
-            set { m_FaceTrackingMenu = value; }
+            get => m_FaceTrackingMenu;
+            set => m_FaceTrackingMenu = value;
         }
 
         [SerializeField]
@@ -45,32 +61,32 @@ namespace UnityEngine.XR.ARFoundation.Samples
         GameObject m_PlaneDetectionMenu;
         public GameObject planeDetectionMenu
         {
-            get { return m_PlaneDetectionMenu; }
-            set { m_PlaneDetectionMenu = value; }
+            get => m_PlaneDetectionMenu;
+            set => m_PlaneDetectionMenu = value;
         }
 
         [SerializeField]
         GameObject m_MeshingMenu;
         public GameObject meshingMenu
         {
-            get { return m_MeshingMenu; }
-            set { m_MeshingMenu = value; }
+            get => m_MeshingMenu;
+            set => m_MeshingMenu = value;
         }
 
         [SerializeField]
         GameObject m_DepthMenu;
         public GameObject depthMenu
         {
-            get { return m_DepthMenu; }
-            set { m_DepthMenu = value; }
+            get => m_DepthMenu;
+            set => m_DepthMenu = value;
         }
-        
+
         [SerializeField]
         GameObject m_LightEstimationMenu;
         public GameObject lightEstimationMenu
         {
-            get { return m_LightEstimationMenu; }
-            set { m_LightEstimationMenu = value; }
+            get => m_LightEstimationMenu;
+            set => m_LightEstimationMenu = value;
         }
 
         void Start()
@@ -110,6 +126,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
                 m_LightEstimationMenu.SetActive(true);
                 m_AllMenu.SetActive(false);
             }
+            ScrollToStartPosition();
         }
 
         static void LoadScene(string sceneName)
@@ -128,6 +145,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.ImageTracking;
             m_ImageTrackingMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
 
         public void BasicImageTrackingButtonPressed()
@@ -195,11 +213,6 @@ namespace UnityEngine.XR.ARFoundation.Samples
             LoadScene("Scale");
         }
 
-        public void SampleUXButtonPressed()
-        {
-            LoadScene("SampleUXScene");
-        }
-
         public void ConfigChooserButtonPressed()
         {
             LoadScene("ConfigurationChooser");
@@ -210,6 +223,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.FaceTracking;
             m_FaceTrackingMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
 
         public void ARCoreFaceRegionsButtonPressed()
@@ -257,6 +271,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.BodyTracking;
             m_BodyTrackingMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
 
         public void BodyTracking2DButtonPressed()
@@ -274,13 +289,14 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.LightEstimation;
             m_LightEstimationMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
-        
+
         public void BasicLightEstimationButtonPressed()
         {
             LoadScene("BasicLightEstimation");
         }
-        
+
         public void HDRLightEstimationButtonPressed()
         {
             LoadScene("HDRLightEstimation");
@@ -291,6 +307,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.PlaneDetection;
             m_PlaneDetectionMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
 
         public void FeatheredPlanesButtonPressed()
@@ -319,6 +336,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             m_DepthMenu.SetActive(false);
             m_LightEstimationMenu.SetActive(false);
             m_AllMenu.SetActive(true);
+            ScrollToStartPosition();
         }
 
         public void MeshingMenuButtonPressed()
@@ -326,6 +344,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.Meshing;
             m_MeshingMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
 
         public void DepthMenuButtonPressed()
@@ -333,6 +352,7 @@ namespace UnityEngine.XR.ARFoundation.Samples
             ActiveMenu.currentMenu = MenuType.Depth;
             m_DepthMenu.SetActive(true);
             m_AllMenu.SetActive(false);
+            ScrollToStartPosition();
         }
 
         public void ClassificationMeshesButtonPressed()
@@ -368,6 +388,17 @@ namespace UnityEngine.XR.ARFoundation.Samples
         public void InputSystemButtonPressed()
         {
             LoadScene("InputSystem");
+        }
+
+        public void CameraGrainButtonPressed()
+        {
+            LoadScene("CameraGrain");
+        }
+
+        void ScrollToStartPosition()
+        {
+            m_HorizontalScrollBar.value = 0;
+            m_VerticalScrollBar.value = 1;
         }
     }
 }
