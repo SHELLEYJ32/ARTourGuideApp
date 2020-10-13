@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: QRCodeLibrary
+  m_EditorClassIdentifier: 
+  m_GuidLow: 5370705693908582265
+  m_GuidHigh: 3158938460873203078
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 4708543036671401221
+      m_GuidHigh: 8660412668226045082
+    m_SerializedTextureGuid:
+      m_GuidLow: 4965610534820468282
+      m_GuidHigh: 3134326249124079339
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: Blanchard Hall QR
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4666342779629653599
+      m_GuidHigh: 11689975119490096299
+    m_SerializedTextureGuid:
+      m_GuidLow: 15338129375444793345
+      m_GuidHigh: 118991181511577512
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: Dwight Hall QR
+    m_Texture: {fileID: 0}
