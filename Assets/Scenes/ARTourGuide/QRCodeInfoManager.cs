@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.XR.ARSubsystems;
 using UnityEngine.XR.ARFoundation;
 
 /// This component listens for images detected by the <c>XRImageTrackingSubsystem</c>
@@ -12,36 +9,6 @@ using UnityEngine.XR.ARFoundation;
 [RequireComponent(typeof(ARTrackedImageManager))]
 public class QRCodeInfoManager : MonoBehaviour
 {
-    public ARSession session;
-
-    [SerializeField]
-    [Tooltip("The camera to set on the world space UI canvas for each instantiated image info.")]
-    Camera m_WorldSpaceCanvasCamera;
-
-    /// <summary>
-    /// The prefab has a world space UI canvas,
-    /// which requires a camera to function properly.
-    /// </summary>
-    public Camera worldSpaceCanvasCamera
-    {
-        get { return m_WorldSpaceCanvasCamera; }
-        set { m_WorldSpaceCanvasCamera = value; }
-    }
-
-    [SerializeField]
-    [Tooltip("If an image is detected but no source texture can be found, this texture is used instead.")]
-    Texture2D m_DefaultTexture;
-
-    /// <summary>
-    /// If an image is detected but no source texture can be found,
-    /// this texture is used instead.
-    /// </summary>
-    public Texture2D defaultTexture
-    {
-        get { return m_DefaultTexture; }
-        set { m_DefaultTexture = value; }
-    }
-
     ARTrackedImageManager m_TrackedImageManager;
 
     /// <summary>
@@ -64,37 +31,15 @@ public class QRCodeInfoManager : MonoBehaviour
         m_TrackedImageManager.trackedImagesChanged -= OnTrackedImagesChanged;
     }
 
-    void UpdateInfo(ARTrackedImage trackedImage)
+    void EnablePlaneAndGuide(ARTrackedImage trackedImage)
     {
-        // Set canvas camera
-        var canvas = trackedImage.GetComponentInChildren<Canvas>();
-        canvas.worldCamera = worldSpaceCanvasCamera;
-
-        var planeParentGo = trackedImage.transform.GetChild(0).gameObject;
-        var planeGo = planeParentGo.transform.GetChild(0).gameObject;
-
-        // Disable the visual plane if it is not being tracked
-        if (trackedImage.trackingState != TrackingState.None)
-        {
-
-            gameObject.GetComponent<ARPlaneManager>().enabled = true;
-            gameObject.GetComponent<ARPointCloudManager>().enabled = true;
-            gameObject.GetComponent<ARRaycastManager>().enabled = true;
-            gameObject.GetComponent<TourGuideManager>().enabled = true;
-            onCodeScanned();
-            planeGo.SetActive(true);
-
-            // The image extents is only valid when the image is being tracked
-            trackedImage.transform.localScale = new Vector3(trackedImage.size.x, 1f, trackedImage.size.y);
-
-            // Set the texture
-            var material = planeGo.GetComponentInChildren<MeshRenderer>().material;
-            material.mainTexture = (trackedImage.referenceImage.texture == null) ? defaultTexture : trackedImage.referenceImage.texture;
-        }
-        else
-        {
-            planeGo.SetActive(false);
-        }
+        gameObject.GetComponent<ARPlaneManager>().enabled = true;
+        gameObject.GetComponent<ARPointCloudManager>().enabled = true;
+        gameObject.GetComponent<ARRaycastManager>().enabled = true;
+        gameObject.GetComponent<TourGuideManager>().enabled = true;
+        gameObject.GetComponent<TourGuideManager>().SetQRCode(trackedImage);
+        Debug.Log(trackedImage.name);
+        onCodeScanned();
     }
 
 
@@ -102,13 +47,10 @@ public class QRCodeInfoManager : MonoBehaviour
     {
         foreach (var trackedImage in eventArgs.added)
         {
-            // Give the initial image a reasonable default scale
-            trackedImage.transform.localScale = new Vector3(0.01f, 1f, 0.01f);
-
-            UpdateInfo(trackedImage);
+            EnablePlaneAndGuide(trackedImage);
         }
 
         foreach (var trackedImage in eventArgs.updated)
-            UpdateInfo(trackedImage);
+            EnablePlaneAndGuide(trackedImage);
     }
 }
