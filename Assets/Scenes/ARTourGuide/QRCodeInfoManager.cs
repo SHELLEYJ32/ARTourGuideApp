@@ -13,7 +13,7 @@ public class QRCodeInfoManager : MonoBehaviour
     public Button playPauseButton;
     public Button resetButton;
     public static bool inSession;
-    bool firstSession;
+    bool firstSession = true;
     ARTrackedImageManager m_TrackedImageManager;
 
     /// <summary>
