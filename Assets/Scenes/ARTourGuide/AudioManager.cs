@@ -12,7 +12,8 @@ public class AudioManager : MonoBehaviour
         if (playPauseButton.image.sprite == pauseImage)
         {
             playPauseButton.image.sprite = playImage;
-            GetComponent<AudioSource>().Pause();
+            if (GetComponent<AudioSource>().isPlaying)
+                GetComponent<AudioSource>().Pause();
         }
         else
         {

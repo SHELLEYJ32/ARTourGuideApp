@@ -59,7 +59,18 @@ public class CoachingUIManager : MonoBehaviour
         set { m_TapToPlaceAnimation = value; }
     }
 
+    [SerializeField]
+    Animator m_ScanQRCodeAnimation;
+
+    public Animator scanQRCodeAnimation
+    {
+        get { return m_ScanQRCodeAnimation; }
+        set { m_ScanQRCodeAnimation = value; }
+    }
+
     static List<ARPlane> s_Planes = new List<ARPlane>();
+
+    bool m_ShowingScanQRCode = false;
 
     bool m_ShowingTapToPlace = false;
 
@@ -70,20 +81,20 @@ public class CoachingUIManager : MonoBehaviour
         if (m_CameraManager != null)
             m_CameraManager.frameReceived += FrameChanged;
 
-        TourGuideManager.onPlacedObject += PlacedObject;
+        m_ShowingScanQRCode = true;
     }
 
     void OnDisable()
     {
         if (m_CameraManager != null)
             m_CameraManager.frameReceived -= FrameChanged;
-
-        TourGuideManager.onPlacedObject -= PlacedObject;
     }
 
     void FrameChanged(ARCameraFrameEventArgs args)
     {
+        TourGuideManager.onPlacedObject += PlacedObject;
         QRCodeInfoManager.onCodeScanned += CodeScanned;
+        QRCodeInfoManager.onResetSession += PromptScan;
 
         if (PlanesFound() && m_ShowingMoveDevice)
         {
@@ -119,10 +130,26 @@ public class CoachingUIManager : MonoBehaviour
 
     void CodeScanned()
     {
-        if (!m_ShowingMoveDevice){
-            moveDeviceAnimation.SetTrigger(k_FadeOnAnim);
+        if (m_ShowingScanQRCode)
+        {
+            if (scanQRCodeAnimation)
+                scanQRCodeAnimation.SetTrigger(k_FadeOffAnim);
+
+            if (moveDeviceAnimation)
+                moveDeviceAnimation.SetTrigger(k_FadeOnAnim);
+
+            m_ShowingScanQRCode = false;
             m_ShowingMoveDevice = true;
         }
-            
+
+    }
+
+    void PromptScan()
+    {
+        if (!m_ShowingScanQRCode)
+        {
+            scanQRCodeAnimation.SetTrigger(k_FadeOnAnim);
+            m_ShowingScanQRCode = true;
+        }
     }
 }
