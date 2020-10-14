@@ -133,7 +133,11 @@ public class CoachingUIManager : MonoBehaviour
         if (m_ShowingScanQRCode)
         {
             if (scanQRCodeAnimation)
-                scanQRCodeAnimation.SetTrigger(k_FadeOffAnim);
+            {
+                //scanQRCodeAnimation.SetTrigger(k_FadeOffAnim);
+                //TODO: fix this later
+                scanQRCodeAnimation.enabled = false;
+            }
 
             if (moveDeviceAnimation)
                 moveDeviceAnimation.SetTrigger(k_FadeOnAnim);
@@ -141,13 +145,15 @@ public class CoachingUIManager : MonoBehaviour
             m_ShowingScanQRCode = false;
             m_ShowingMoveDevice = true;
         }
-
     }
 
     void PromptScan()
     {
         if (!m_ShowingScanQRCode)
         {
+            if (!scanQRCodeAnimation.enabled)
+                scanQRCodeAnimation.enabled = true;
+
             scanQRCodeAnimation.SetTrigger(k_FadeOnAnim);
             m_ShowingScanQRCode = true;
         }
