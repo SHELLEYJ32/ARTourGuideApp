@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 
 /// This component listens for images detected by the <c>XRImageTrackingSubsystem</c>
@@ -9,12 +10,21 @@ using UnityEngine.XR.ARFoundation;
 [RequireComponent(typeof(ARTrackedImageManager))]
 public class QRCodeInfoManager : MonoBehaviour
 {
+    public Button playPauseButton;
+    public Button resetButton;
+    public static bool inSession;
+    bool firstSession;
     ARTrackedImageManager m_TrackedImageManager;
 
     /// <summary>
-    /// Invoked whenever an object is placed in on a plane.
+    /// Invoked whenever QRCode is scanned.
     /// </summary>
     public static event Action onCodeScanned;
+
+    /// <summary>
+    /// Invoked whenever session is reset.
+    /// </summary>
+    public static event Action onResetSession;
 
     void Awake()
     {
@@ -33,24 +43,47 @@ public class QRCodeInfoManager : MonoBehaviour
 
     void EnablePlaneAndGuide(ARTrackedImage trackedImage)
     {
-        gameObject.GetComponent<ARPlaneManager>().enabled = true;
-        gameObject.GetComponent<ARPointCloudManager>().enabled = true;
-        gameObject.GetComponent<ARRaycastManager>().enabled = true;
-        gameObject.GetComponent<TourGuideManager>().enabled = true;
-        gameObject.GetComponent<TourGuideManager>().SetQRCode(trackedImage);
-        Debug.Log(trackedImage.name);
-        onCodeScanned();
+        if (!inSession)
+        {
+            inSession = true;
+            onCodeScanned();
+            playPauseButton.interactable = true;
+            resetButton.interactable = true;
+            if (firstSession)
+            {
+                gameObject.GetComponent<ARPlaneManager>().enabled = true;
+                gameObject.GetComponent<ARPointCloudManager>().enabled = true;
+                gameObject.GetComponent<ARRaycastManager>().enabled = true;
+                gameObject.GetComponent<TourGuideManager>().enabled = true;
+                firstSession = false;
+            }
+            gameObject.GetComponent<TourGuideManager>().SetQRCode(trackedImage);
+        }
     }
 
+    public void ResetSession()
+    {
+        if (inSession)
+        {
+            inSession = false;
+            playPauseButton.interactable = false;
+            resetButton.interactable = false;
+            gameObject.GetComponent<TourGuideManager>().ResetTourGuide();
+            onResetSession();
+        }
+    }
 
     void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs eventArgs)
     {
+        //only allow one image to be scanned at one time
         foreach (var trackedImage in eventArgs.added)
         {
             EnablePlaneAndGuide(trackedImage);
         }
 
         foreach (var trackedImage in eventArgs.updated)
+        {
             EnablePlaneAndGuide(trackedImage);
+        }
     }
 }

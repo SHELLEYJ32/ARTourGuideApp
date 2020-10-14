@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
@@ -14,7 +15,13 @@ using UnityEngine.XR.ARSubsystems;
 [RequireComponent(typeof(ARRaycastManager))]
 public class TourGuideManager : MonoBehaviour
 {
-    public AudioSource music;
+    public AudioSource audioSource;
+    public AudioClip blanchHallClip;
+    public AudioClip dwightHallClip;
+    public GameObject title;
+    public GameObject description;
+    public GameObject subtitle;
+    ARTrackedImage QRCode;
 
     [SerializeField]
     [Tooltip("Instantiates this prefab on a plane at the touch location.")]
@@ -32,7 +39,7 @@ public class TourGuideManager : MonoBehaviour
     /// <summary>
     /// The object instantiated as a result of a successful raycast intersection with a plane.
     /// </summary>
-    public GameObject spawnedObject { get; private set; }
+    public GameObject tourGuide { get; private set; }
 
     /// <summary>
     /// Invoked whenever an object is placed in on a plane.
@@ -67,26 +74,66 @@ public class TourGuideManager : MonoBehaviour
 
     void Update()
     {
-        if (!TryGetTouchPosition(out Vector2 touchPosition))
-            return;
-
-        if (m_RaycastManager.Raycast(touchPosition, s_Hits, TrackableType.PlaneWithinPolygon))
+        if (QRCodeInfoManager.inSession)
         {
-            // Raycast hits are sorted by distance, so the first one
-            // will be the closest hit.
-            var hitPose = s_Hits[0].pose;
+            if (!TryGetTouchPosition(out Vector2 touchPosition))
+                return;
 
-            if (spawnedObject == null)
+            if (m_RaycastManager.Raycast(touchPosition, s_Hits, TrackableType.PlaneWithinPolygon))
             {
-                spawnedObject = Instantiate(m_PlacedPrefab, hitPose.position, hitPose.rotation);
-                music.Play();
-                
-            }
+                // Raycast hits are sorted by distance, so the first one
+                // will be the closest hit.
+                var hitPose = s_Hits[0].pose;
 
-            if (onPlacedObject != null)
-            {
-                onPlacedObject();
+                if (tourGuide == null)
+                {
+                    tourGuide = Instantiate(m_PlacedPrefab, hitPose.position, hitPose.rotation);
+                    onPlacedObject?.Invoke();
+
+                    //display texts
+                    if (!title.activeSelf)
+                    {
+                        title.SetActive(true);
+                        description.SetActive(true);
+                        subtitle.SetActive(true);
+                    }
+
+                    audioSource.Play();
+                }
             }
+        }
+
+    }
+
+    public void SetQRCode(ARTrackedImage trackedImage)
+    {
+        QRCode = trackedImage;
+
+        //find audio clip
+        if (trackedImage.referenceImage.name == "Dwight Hall QR")
+        {
+            audioSource.clip = dwightHallClip;
+            title.GetComponent<Text>().text = "Dwight Hall";
+            description.GetComponent<Text>().text = "Dwight Hall houses the academic centers, some interdisciplinary program offices, and the College’s Archives and Special Collections.";
+        }
+        else if (trackedImage.referenceImage.name == "Blanchard Hall QR")
+        {
+            audioSource.clip = blanchHallClip;
+            title.GetComponent<Text>().text = "Blanchard Hall";
+            description.GetComponent<Text>().text = "Blanchard Hall is a meeting, eating, study and social place for the entire community.";
+        }
+    }
+
+    public void ResetTourGuide()
+    {
+        Destroy(tourGuide);
+        audioSource.Stop();
+
+        if (title.activeSelf)
+        {
+            title.SetActive(false);
+            description.SetActive(false);
+            subtitle.SetActive(false);
         }
     }
 
