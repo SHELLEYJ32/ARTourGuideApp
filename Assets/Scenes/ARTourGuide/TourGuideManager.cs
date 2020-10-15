@@ -18,12 +18,19 @@ using UnityEditor;
 [RequireComponent(typeof(ARRaycastManager))]
 public class TourGuideManager : MonoBehaviour, ISerializationCallbackReceiver
 {
-    public AudioSource audioSource;
-    public AudioClip blanchHallClip;
-    public AudioClip dwightHallClip;
+    [SerializeField]
+    AudioSource m_AudioSource;
+
+    public AudioSource audioSource
+    {
+        get { return m_AudioSource; }
+        set { m_AudioSource = value; }
+    }
+
     public GameObject title;
     public GameObject description;
     public GameObject subtitle;
+
     ARTrackedImage QRCode;
 
     static List<ARRaycastHit> s_Hits = new List<ARRaycastHit>();
@@ -257,6 +264,11 @@ public class TourGuideManager : MonoBehaviour, ISerializationCallbackReceiver
             var libraryProperty = serializedObject.FindProperty(nameof(m_ImageLibrary));
             EditorGUILayout.PropertyField(libraryProperty);
             var library = libraryProperty.objectReferenceValue as XRReferenceImageLibrary;
+
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_AudioSource"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("title"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("description"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("subtitle"));
 
             //check library changes
             if (HasLibraryChanged(library))
