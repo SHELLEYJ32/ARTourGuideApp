@@ -925,8 +925,18 @@ MonoBehaviour:
   title: {fileID: 475279639}
   description: {fileID: 697691251}
   subtitle: {fileID: 345884922}
+  m_QRCodeInfoList:
+  - codeGuid: e6701d05-1af1-4158-9a04-e8d96ff72f78
+    codeClip: {fileID: 8300000, guid: 3f65518a16798473998391cd020961aa, type: 3}
+    codeDescription: Blanchard Hall is a meeting, eating, study and social place
+      for the entire community.
+  - codeGuid: e408ce5f-2e08-40c2-ab9c-5c5e6f223ba2
+    codeClip: {fileID: 8300000, guid: 3f46318da65c04206a9f0a6cce4549a8, type: 3}
+    codeDescription: "Dwight Hall houses the academic centers, some interdisciplinary
+      program offices, and the College\u2019s Archives and Special Collections."
   m_PlacedPrefab: {fileID: 1522729216997060, guid: 32026357c04e0e944835774b42e3c1b7,
     type: 3}
+  m_ImageLibrary: {fileID: 11400000, guid: 29cc96cca479e4b9fa326574c15a1593, type: 2}
 --- !u!114 &820727005
 MonoBehaviour:
   m_ObjectHideFlags: 0

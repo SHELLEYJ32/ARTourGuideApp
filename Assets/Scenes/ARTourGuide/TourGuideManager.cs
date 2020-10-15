@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 /// <summary>
 /// Listens for touch events and performs an AR raycast from the screen touch point.
@@ -13,7 +16,7 @@ using UnityEngine.XR.ARSubsystems;
 /// and moved to the hit position.
 /// </summary>
 [RequireComponent(typeof(ARRaycastManager))]
-public class TourGuideManager : MonoBehaviour
+public class TourGuideManager : MonoBehaviour, ISerializationCallbackReceiver
 {
     public AudioSource audioSource;
     public AudioClip blanchHallClip;
@@ -22,6 +25,51 @@ public class TourGuideManager : MonoBehaviour
     public GameObject description;
     public GameObject subtitle;
     ARTrackedImage QRCode;
+
+    static List<ARRaycastHit> s_Hits = new List<ARRaycastHit>();
+
+    ARRaycastManager m_RaycastManager;
+
+    /// <summary>
+    /// Used to associate an `XRReferenceImage` with other code info by using the `XRReferenceImage`'s guid as a unique identifier for a particular reference image.
+    /// </summary>
+    [Serializable]
+    struct QRCodeInfo
+    {
+        // System.Guid isn't serializable, so we store the Guid as a string. At runtime, this is converted back to a System.Guid
+        public string codeGuid;
+        public AudioClip codeClip;
+        public string codeDescription;
+
+        public QRCodeInfo(Guid guid, AudioClip clip, string description)
+        {
+            codeGuid = guid.ToString();
+            codeClip = clip;
+            codeDescription = description;
+        }
+    }
+
+    [SerializeField]
+    [HideInInspector]
+    List<QRCodeInfo> m_QRCodeInfoList = new List<QRCodeInfo>();
+
+    /// <summary>
+    /// Store QRCode clip and description for dictionary value
+    /// </summary>
+    [Serializable]
+    struct QRCodeInfoDictionaryVal
+    {
+        public AudioClip codeClip;
+        public string codeDescription;
+
+        public QRCodeInfoDictionaryVal(AudioClip clip, string description)
+        {
+            codeClip = clip;
+            codeDescription = description;
+        }
+    }
+
+    Dictionary<Guid, QRCodeInfoDictionaryVal> m_QRCodeInfoDictionary = new Dictionary<Guid, QRCodeInfoDictionaryVal>();
 
     [SerializeField]
     [Tooltip("Instantiates this prefab on a plane at the touch location.")]
@@ -45,6 +93,37 @@ public class TourGuideManager : MonoBehaviour
     /// Invoked whenever an object is placed in on a plane.
     /// </summary>
     public static event Action onPlacedObject;
+
+    [SerializeField]
+    [Tooltip("Reference Image Library")]
+    XRReferenceImageLibrary m_ImageLibrary;
+
+    /// <summary>
+    /// Get the <c>XRReferenceImageLibrary</c>
+    /// </summary>
+    public XRReferenceImageLibrary imageLibrary
+    {
+        get => m_ImageLibrary;
+        set => m_ImageLibrary = value;
+    }
+
+    public void OnBeforeSerialize()
+    {
+        m_QRCodeInfoList.Clear();
+        foreach (var kvp in m_QRCodeInfoDictionary)
+        {
+            m_QRCodeInfoList.Add(new QRCodeInfo(kvp.Key, kvp.Value.codeClip, kvp.Value.codeDescription));
+        }
+    }
+
+    public void OnAfterDeserialize()
+    {
+        m_QRCodeInfoDictionary = new Dictionary<Guid, QRCodeInfoDictionaryVal>();
+        foreach (var entry in m_QRCodeInfoList)
+        {
+            m_QRCodeInfoDictionary.Add(Guid.Parse(entry.codeGuid), new QRCodeInfoDictionaryVal(entry.codeClip, entry.codeDescription));
+        }
+    }
 
     void Awake()
     {
@@ -102,25 +181,17 @@ public class TourGuideManager : MonoBehaviour
                 }
             }
         }
-
     }
 
     public void SetQRCode(ARTrackedImage trackedImage)
     {
         QRCode = trackedImage;
 
-        //find audio clip
-        if (trackedImage.referenceImage.name == "Dwight Hall QR")
+        if (m_QRCodeInfoDictionary.TryGetValue(trackedImage.referenceImage.guid, out var codeInfo))
         {
-            audioSource.clip = dwightHallClip;
-            title.GetComponent<Text>().text = "Dwight Hall";
-            description.GetComponent<Text>().text = "Dwight Hall houses the academic centers, some interdisciplinary program offices, and the College’s Archives and Special Collections.";
-        }
-        else if (trackedImage.referenceImage.name == "Blanchard Hall QR")
-        {
-            audioSource.clip = blanchHallClip;
-            title.GetComponent<Text>().text = "Blanchard Hall";
-            description.GetComponent<Text>().text = "Blanchard Hall is a meeting, eating, study and social place for the entire community.";
+            audioSource.clip = codeInfo.codeClip;
+            title.GetComponent<Text>().text = trackedImage.referenceImage.name;
+            description.GetComponent<Text>().text = codeInfo.codeDescription;
         }
     }
 
@@ -137,8 +208,115 @@ public class TourGuideManager : MonoBehaviour
         }
     }
 
-    static List<ARRaycastHit> s_Hits = new List<ARRaycastHit>();
+    public AudioClip GetCodeClipForReferenceImage(XRReferenceImage referenceImage)
+            => m_QRCodeInfoDictionary.TryGetValue(referenceImage.guid, out var codeVal) ? codeVal.codeClip : null;
 
-    ARRaycastManager m_RaycastManager;
+    public string GetCodeDesForReferenceImage(XRReferenceImage referenceImage)
+            => m_QRCodeInfoDictionary.TryGetValue(referenceImage.guid, out var codeVal) ? codeVal.codeDescription : null;
+
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// This customizes the inspector component and updates the prefab list when
+    /// the reference image library is changed.
+    /// </summary>
+    [CustomEditor(typeof(TourGuideManager))]
+    class TourGuideManagerInspector : Editor
+    {
+        List<XRReferenceImage> m_ReferenceImages = new List<XRReferenceImage>();
+        bool m_IsExpanded = true;
+
+        bool HasLibraryChanged(XRReferenceImageLibrary library)
+        {
+            if (library == null)
+                return m_ReferenceImages.Count == 0;
+
+            if (m_ReferenceImages.Count != library.count)
+                return true;
+
+            for (int i = 0; i < library.count; i++)
+            {
+                if (m_ReferenceImages[i] != library[i])
+                    return true;
+            }
+
+            return false;
+        }
+
+        public override void OnInspectorGUI()
+        {
+            //customized inspector
+            var behaviour = serializedObject.targetObject as TourGuideManager;
+
+            serializedObject.Update();
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Script"));
+            }
+
+            var libraryProperty = serializedObject.FindProperty(nameof(m_ImageLibrary));
+            EditorGUILayout.PropertyField(libraryProperty);
+            var library = libraryProperty.objectReferenceValue as XRReferenceImageLibrary;
+
+            //check library changes
+            if (HasLibraryChanged(library))
+            {
+                if (library)
+                {
+                    var tempDictionary = new Dictionary<Guid, QRCodeInfoDictionaryVal>();
+                    foreach (var referenceImage in library)
+                    {
+                        tempDictionary.Add(referenceImage.guid,
+                            new QRCodeInfoDictionaryVal(behaviour.GetCodeClipForReferenceImage(referenceImage),
+                            behaviour.GetCodeDesForReferenceImage(referenceImage)));
+                    }
+                    behaviour.m_QRCodeInfoDictionary = tempDictionary;
+                }
+            }
+
+            // update current
+            m_ReferenceImages.Clear();
+            if (library)
+            {
+                foreach (var referenceImage in library)
+                {
+                    m_ReferenceImages.Add(referenceImage);
+                }
+            }
+
+            //show QRCode info list
+            m_IsExpanded = EditorGUILayout.Foldout(m_IsExpanded, "QRCode Info List");
+            if (m_IsExpanded)
+            {
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    EditorGUI.BeginChangeCheck();
+
+                    var tempDictionary = new Dictionary<Guid, QRCodeInfoDictionaryVal>();
+                    foreach (var image in library)
+                    {
+                        var codeClip = (AudioClip)EditorGUILayout.ObjectField(image.name, behaviour.m_QRCodeInfoDictionary[image.guid].codeClip, typeof(AudioClip), false);
+
+                        EditorGUILayout.LabelField("Description");
+                        GUIStyle myStyle = new GUIStyle(EditorStyles.textArea);
+                        myStyle.wordWrap = true;
+                        var codeDes = EditorGUILayout.TextArea(behaviour.m_QRCodeInfoDictionary[image.guid].codeDescription, myStyle);
+
+                        tempDictionary.Add(image.guid, new QRCodeInfoDictionaryVal(codeClip, codeDes));
+                    }
+
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(target, "Update QRCode Info");
+                        behaviour.m_QRCodeInfoDictionary = tempDictionary;
+                        EditorUtility.SetDirty(target);
+                    }
+                }
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+    }
+#endif
 
 }

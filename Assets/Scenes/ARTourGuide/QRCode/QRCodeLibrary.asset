@@ -23,7 +23,7 @@ MonoBehaviour:
       m_GuidHigh: 3134326249124079339
     m_Size: {x: 0.14, y: 0.14}
     m_SpecifySize: 1
-    m_Name: Blanchard Hall QR
+    m_Name: Blanchard Hall
     m_Texture: {fileID: 0}
   - m_SerializedGuid:
       m_GuidLow: 4666342779629653599
@@ -33,5 +33,5 @@ MonoBehaviour:
       m_GuidHigh: 118991181511577512
     m_Size: {x: 0.14, y: 0.14}
     m_SpecifySize: 1
-    m_Name: Dwight Hall QR
+    m_Name: Dwight Hall
     m_Texture: {fileID: 0}
