@@ -168,7 +168,6 @@ public class CoachingUIManager : MonoBehaviour
     /// <param name="value">Each planes' GameObject is SetActive with this value.</param>
     void SetAllPlanesActive(bool value)
     {
-        Debug.Log("Log" + planeManager);
         foreach (var plane in planeManager.trackables)
             plane.gameObject.SetActive(value);
     }
