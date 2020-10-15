@@ -78,16 +78,16 @@ public class CoachingUIManager : MonoBehaviour
 
     void OnEnable()
     {
-        if (m_CameraManager != null)
-            m_CameraManager.frameReceived += FrameChanged;
+        if (cameraManager != null)
+            cameraManager.frameReceived += FrameChanged;
 
         m_ShowingScanQRCode = true;
     }
 
     void OnDisable()
     {
-        if (m_CameraManager != null)
-            m_CameraManager.frameReceived -= FrameChanged;
+        if (cameraManager != null)
+            cameraManager.frameReceived -= FrameChanged;
     }
 
     void FrameChanged(ARCameraFrameEventArgs args)
@@ -125,6 +125,7 @@ public class CoachingUIManager : MonoBehaviour
                 tapToPlaceAnimation.SetTrigger(k_FadeOffAnim);
 
             m_ShowingTapToPlace = false;
+            SetAllPlanesActive(false);
         }
     }
 
@@ -144,6 +145,7 @@ public class CoachingUIManager : MonoBehaviour
 
             m_ShowingScanQRCode = false;
             m_ShowingMoveDevice = true;
+            SetAllPlanesActive(true);
         }
     }
 
@@ -157,5 +159,17 @@ public class CoachingUIManager : MonoBehaviour
             scanQRCodeAnimation.SetTrigger(k_FadeOnAnim);
             m_ShowingScanQRCode = true;
         }
+    }
+
+    /// <summary>
+    /// Iterates over all the existing planes and activates
+    /// or deactivates their <c>GameObject</c>s'.
+    /// </summary>
+    /// <param name="value">Each planes' GameObject is SetActive with this value.</param>
+    void SetAllPlanesActive(bool value)
+    {
+        Debug.Log("Log" + planeManager);
+        foreach (var plane in planeManager.trackables)
+            plane.gameObject.SetActive(value);
     }
 }

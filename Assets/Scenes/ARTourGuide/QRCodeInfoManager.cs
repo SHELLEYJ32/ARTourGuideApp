@@ -45,10 +45,6 @@ public class QRCodeInfoManager : MonoBehaviour
     {
         if (!inSession)
         {
-            inSession = true;
-            onCodeScanned();
-            playPauseButton.interactable = true;
-            resetButton.interactable = true;
             if (firstSession)
             {
                 gameObject.GetComponent<ARPlaneManager>().enabled = true;
@@ -57,6 +53,11 @@ public class QRCodeInfoManager : MonoBehaviour
                 gameObject.GetComponent<TourGuideManager>().enabled = true;
                 firstSession = false;
             }
+
+            inSession = true;
+            onCodeScanned();
+            playPauseButton.interactable = true;
+            resetButton.interactable = true;
             gameObject.GetComponent<TourGuideManager>().SetQRCode(trackedImage);
         }
     }
