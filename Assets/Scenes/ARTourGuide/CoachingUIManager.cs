@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 
 public class CoachingUIManager : MonoBehaviour
@@ -80,8 +81,7 @@ public class CoachingUIManager : MonoBehaviour
     {
         if (cameraManager != null)
             cameraManager.frameReceived += FrameChanged;
-
-        m_ShowingScanQRCode = true;
+        PromptScan();
     }
 
     void OnDisable()
@@ -135,9 +135,14 @@ public class CoachingUIManager : MonoBehaviour
         {
             if (scanQRCodeAnimation)
             {
-                //scanQRCodeAnimation.SetTrigger(k_FadeOffAnim);
+                scanQRCodeAnimation.SetTrigger(k_FadeOffAnim);
                 //TODO: fix this later
-                scanQRCodeAnimation.enabled = false;
+                //var scanImage = scanQRCodeAnimation.GetComponent<Image>();
+                //var scanImageColor = scanImage.color;
+                //scanImageColor.a = 0f;
+                //scanImage.color = scanImageColor;
+
+                //scanQRCodeAnimation.enabled = false;
             }
 
             if (moveDeviceAnimation)
@@ -153,9 +158,6 @@ public class CoachingUIManager : MonoBehaviour
     {
         if (!m_ShowingScanQRCode)
         {
-            if (!scanQRCodeAnimation.enabled)
-                scanQRCodeAnimation.enabled = true;
-
             scanQRCodeAnimation.SetTrigger(k_FadeOnAnim);
             m_ShowingScanQRCode = true;
         }
